@@ -1,4 +1,4 @@
-# go-harlog
+# go-harlog [![Go Documentation](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/vvakame/go-harlog) [![CircleCI](https://circleci.com/gh/vvakame/go-harlog.svg?style=svg)](https://circleci.com/gh/vvakame/go-harlog)
 
 net/http client logging by HAR format.
 
