@@ -10,15 +10,36 @@ import (
 // from https://w3c.github.io/web-performance/specs/HAR/Overview.html
 
 var _ json.Marshaler = Time{}
+var _ json.Unmarshaler = (*Time)(nil)
 var _ json.Marshaler = Duration(0)
+var _ json.Unmarshaler = (*Duration)(nil)
 
 // Time provides ISO 8601 format JSON data.
 type Time time.Time
 
 // MarshalJSON to ISO 8601 format from time.Time.
 func (t Time) MarshalJSON() ([]byte, error) {
+	if time.Time(t).IsZero() {
+		return []byte(`null`), nil
+	}
+
 	v := time.Time(t).Format(time.RFC3339)
 	return json.Marshal(v)
+}
+
+// UnmarshalJSON from ISO 8601 format to time.Time.
+func (t *Time) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
+
+	v, err := time.Parse(`"`+time.RFC3339+`"`, string(data))
+	if err != nil {
+		return err
+	}
+	vt := Time(v)
+	*t = vt
+	return nil
 }
 
 // Duration provides milliseconds order JSON format.
@@ -28,6 +49,23 @@ type Duration time.Duration
 func (d Duration) MarshalJSON() ([]byte, error) {
 	v := float64(d) / float64(time.Millisecond)
 	return json.Marshal(v)
+}
+
+// UnmarshalJSON from milliseconds order number format to time.Duration.
+func (d *Duration) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
+
+	var v float64
+	err := json.Unmarshal(data, &v)
+	if err != nil {
+		return err
+	}
+
+	*d = Duration(v * float64(time.Millisecond))
+
+	return nil
 }
 
 // HARContainer is ...

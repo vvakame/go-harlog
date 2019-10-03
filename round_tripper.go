@@ -41,7 +41,7 @@ func (h *Transport) init() {
 		Log: &Log{
 			Version: "1.2",
 			Creator: &Creator{
-				Name:    "github.com/vvakame/til/go/har-log",
+				Name:    "github.com/vvakame/go-harlog",
 				Version: "0.0.1",
 			},
 		},

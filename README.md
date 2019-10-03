@@ -5,6 +5,8 @@ net/http client logging by HAR format.
 Take http request/response log by HAR (HTTP Archive) format.
 It can visualize by [any](https://developers.google.com/web/updates/2017/08/devtools-release-notes#har-imports) [tools](https://toolbox.googleapps.com/apps/har_analyzer/).
 
+## How to use
+
 ```shell script
 $ go get github.com/vvakame/go-harlog
 ```
@@ -23,6 +25,8 @@ if err != nil {
 }
 fmt.Println(string(b))
 ```
+
+
 
 ## Limitations
 
