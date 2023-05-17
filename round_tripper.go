@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"strings"
+	"sync/atomic"
+	"unsafe"
 )
 
 var _ http.RoundTripper = (*Transport)(nil)
@@ -29,13 +31,12 @@ func (h *Transport) init() {
 		return
 	}
 
-	h.Container.mu.Lock()
-	defer h.Container.mu.Unlock()
-	if h.Container != nil {
-		return
-	}
+	containerPtr := (*unsafe.Pointer)(unsafe.Pointer(&h.Container))
+	atomic.CompareAndSwapPointer(containerPtr, unsafe.Pointer(nil), unsafe.Pointer(NewHARContainer()))
+}
 
-	h.Container = &HARContainer{
+func NewHARContainer() *HARContainer {
+	return &HARContainer{
 		Log: &Log{
 			Version: "1.2",
 			Creator: &Creator{
