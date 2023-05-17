@@ -2,6 +2,7 @@ package harlog
 
 import (
 	"encoding/json"
+	"sync"
 	"time"
 )
 
@@ -71,7 +72,8 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 // HARContainer is ...
 // The HAR format is based on JSON, as described in RFC 4627.
 type HARContainer struct {
-	Log *Log `json:"log"`
+	Log *Log       `json:"log"`
+	mu  sync.Mutex `json:"-"`
 }
 
 // Log is...

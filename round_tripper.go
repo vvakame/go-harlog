@@ -9,7 +9,8 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"strings"
-	"sync"
+	"sync/atomic"
+	"unsafe"
 )
 
 var _ http.RoundTripper = (*Transport)(nil)
@@ -22,22 +23,20 @@ type Transport struct {
 	// if nil, emit error log by log package, and ignore it.
 	UnusualError func(err error) error
 
-	har   *HARContainer
-	mutex sync.Mutex
+	Container *HARContainer
 }
 
 func (h *Transport) init() {
-	if h.har != nil {
+	if h.Container != nil {
 		return
 	}
 
-	h.mutex.Lock()
-	defer h.mutex.Unlock()
-	if h.har != nil {
-		return
-	}
+	containerPtr := (*unsafe.Pointer)(unsafe.Pointer(&h.Container))
+	atomic.CompareAndSwapPointer(containerPtr, unsafe.Pointer(nil), unsafe.Pointer(NewHARContainer()))
+}
 
-	h.har = &HARContainer{
+func NewHARContainer() *HARContainer {
+	return &HARContainer{
 		Log: &Log{
 			Version: "1.2",
 			Creator: &Creator{
@@ -51,7 +50,7 @@ func (h *Transport) init() {
 // HAR returns HAR format log data.
 func (h *Transport) HAR() *HARContainer {
 	h.init()
-	return h.har
+	return h.Container
 }
 
 // RoundTrip executes a single HTTP transaction, returning
@@ -66,9 +65,9 @@ func (h *Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 
 	entry := &Entry{}
 	defer func() {
-		h.mutex.Lock()
-		h.har.Log.Entries = append(h.har.Log.Entries, entry)
-		h.mutex.Unlock()
+		h.Container.mu.Lock()
+		h.Container.Log.Entries = append(h.Container.Log.Entries, entry)
+		h.Container.mu.Unlock()
 	}()
 
 	err := h.preRoundTrip(r, entry)
