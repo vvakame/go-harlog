@@ -54,6 +54,17 @@ func (h *Transport) HAR() *HARContainer {
 	return h.har
 }
 
+// Reset returns HAR format log data and initializes a new HAR data store
+func (h *Transport) Reset() *HARContainer {
+	h.init()
+	h.mutex.Lock()
+	har := h.har
+	h.har = nil
+	h.mutex.Unlock()
+	h.init()
+	return har
+}
+
 // RoundTrip executes a single HTTP transaction, returning
 // a Response for the provided Request.
 func (h *Transport) RoundTrip(r *http.Request) (*http.Response, error) {
