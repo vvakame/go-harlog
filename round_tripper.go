@@ -27,12 +27,12 @@ type Transport struct {
 }
 
 func (h *Transport) init() {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	if h.har != nil {
 		return
 	}
 
-	h.mutex.Lock()
-	defer h.mutex.Unlock()
 	if h.har != nil {
 		return
 	}
