@@ -27,12 +27,12 @@ type Transport struct {
 }
 
 func (h *Transport) init() {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	if h.har != nil {
 		return
 	}
 
-	h.mutex.Lock()
-	defer h.mutex.Unlock()
 	if h.har != nil {
 		return
 	}
@@ -52,6 +52,17 @@ func (h *Transport) init() {
 func (h *Transport) HAR() *HARContainer {
 	h.init()
 	return h.har
+}
+
+// Reset returns HAR format log data and initializes a new HAR data store
+func (h *Transport) Reset() *HARContainer {
+	h.init()
+	h.mutex.Lock()
+	har := h.har
+	h.har = nil
+	h.mutex.Unlock()
+	h.init()
+	return har
 }
 
 // RoundTrip executes a single HTTP transaction, returning
